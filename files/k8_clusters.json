@@ -1,0 +1,55 @@
+{
+  "config": [
+    {
+      "env": "qa",
+      "color_configs": [
+        {
+          "color": "blue",
+          "file": {
+            "file_path": "<QA BLUE>"
+          }
+        },
+        {
+          "color": "green",
+          "file": {
+            "file_path": "<QA GREEN>"
+          }
+        }
+      ]
+    },
+    {
+      "env": "simulation",
+      "color_configs": [
+        {
+          "color": "blue",
+          "file": {
+            "file_path": "<SIM BLUE>"
+          }
+        },
+        {
+          "color": "green",
+          "file": {
+            "file_path": "<SIM GREEN>"
+          }
+        }
+      ]
+    },
+    {
+      "env": "prodution",
+      "color_configs": [
+        {
+          "color": "blue",
+          "file": {
+            "file_path": "<PROD BLUE>"
+          }
+        },
+        {
+          "color": "green",
+          "file": {
+            "file_path": "<PROD GREEN>"
+          }
+        }
+      ]
+    }
+  ]
+}
