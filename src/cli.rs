@@ -3,7 +3,7 @@ use crate::models::configuration::env_config::EnvConfig;
 
 use crossterm::event::{read, Event, KeyCode, KeyEvent, KeyModifiers};
 use crossterm::style::Print;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType};
+use crossterm::terminal::{Clear, ClearType};
 use crossterm::{cursor, execute};
 use std::io::{stdout, Write};
 
@@ -29,8 +29,10 @@ pub fn print_selector(items: &Vec<String>, idx: usize, offset: u32) {
 
 fn pick_color(color_cfg: EnvConfig, offset: u32) {
     let selected_env = color_cfg.env.clone();
-    let colors = color_cfg.get_keys();
-    let n_colors = colors.len();
+    let mut colors = color_cfg.get_keys();
+    colors.push(String::from("BACK"));
+    let colors = colors;
+    let n_colors: usize = colors.len();
 
     let mut line_choice = 0;
     let mut stdout = stdout();
@@ -41,12 +43,10 @@ fn pick_color(color_cfg: EnvConfig, offset: u32) {
         cursor::MoveTo(0, offset as u16)
     )
     .unwrap();
-    print_selector(&colors, line_choice, offset);
 
     loop {
-        execute!(stdout, cursor::MoveTo(0, n_colors as u16)).unwrap();
+        print_selector(&colors, line_choice, offset);
 
-        //matching the key
         match read().unwrap() {
             Event::Key(KeyEvent {
                 code: KeyCode::Up,
@@ -71,17 +71,22 @@ fn pick_color(color_cfg: EnvConfig, offset: u32) {
                 modifiers: _,
             }) => {
                 let selected_color = colors[line_choice.clone()].clone();
-                let s: String = format!(
-                    "Selected environment: {selected_env}, selected color: {selected_color} \n"
-                );
-                execute!(
-                    stdout,
-                    cursor::MoveTo(0, offset as u16),
-                    Clear(ClearType::FromCursorDown),
-                    Print(s)
-                )
-                .unwrap();
-                std::process::exit(0);
+
+                if (n_colors - 1) == line_choice {
+                    return ();
+                } else {
+                    let s: String = format!(
+                        "Selected environment: {selected_env}, selected color: {selected_color} \n"
+                    );
+                    execute!(
+                        stdout,
+                        cursor::MoveTo(0, offset as u16),
+                        Clear(ClearType::FromCursorDown),
+                        Print(s)
+                    )
+                    .unwrap();
+                    std::process::exit(0);
+                }
             }
             Event::Key(KeyEvent {
                 code: KeyCode::Char('c'),
@@ -93,7 +98,9 @@ fn pick_color(color_cfg: EnvConfig, offset: u32) {
 }
 
 pub fn pick_env(cfg: Config, offset: u32) {
-    let envs = cfg.get_keys();
+    let mut envs = cfg.get_keys();
+    envs.push(String::from("EXIT"));
+    let envs = envs;
     let n_envs = envs.len();
 
     let mut line_choice = 0;
@@ -105,9 +112,10 @@ pub fn pick_env(cfg: Config, offset: u32) {
         Clear(ClearType::FromCursorDown)
     )
     .unwrap();
-    print_selector(&envs, line_choice, offset);
 
     loop {
+        print_selector(&envs, line_choice, offset);
+
         match read().unwrap() {
             Event::Key(KeyEvent {
                 code: KeyCode::Up,
@@ -132,8 +140,13 @@ pub fn pick_env(cfg: Config, offset: u32) {
                 modifiers: _,
             }) => {
                 let selected_env = envs[line_choice.clone()].clone();
-                let env_cfg = cfg[selected_env].clone();
-                pick_color(env_cfg, offset);
+
+                if (n_envs - 1) == line_choice {
+                    return ();
+                } else {
+                    let env_cfg = cfg[selected_env].clone();
+                    pick_color(env_cfg, offset);
+                }
             }
             Event::Key(KeyEvent {
                 code: KeyCode::Char('c'),
@@ -146,13 +159,17 @@ pub fn pick_env(cfg: Config, offset: u32) {
 
 pub fn start(cfg: Config) {
     let mut stdout = stdout();
-    let offset: u32 = 1;
+    let welcome_message = concat!(
+        "  Welcome to Kubernetes CLI!  \n",
+        "  Use arrow keys and enter to navigate, control-c to exit.\n",
+        "-----------------------------------------------------------"
+    );
+    let offset: u32 = welcome_message.split('\n').count() as u32;
     execute!(
         stdout,
         Clear(ClearType::All),
         cursor::MoveTo(0, 0),
-        Print("Welcome to Kubernetes CLI!"),
-        cursor::Hide
+        Print(welcome_message)
     )
     .unwrap();
     pick_env(cfg, offset);
