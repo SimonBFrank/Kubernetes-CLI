@@ -3,7 +3,7 @@ use std::ops::Index;
 
 use crate::models::configuration::env_config::EnvConfig;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Config {
     config: Vec<EnvConfig>,

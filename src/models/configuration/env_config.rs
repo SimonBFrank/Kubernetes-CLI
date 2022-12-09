@@ -3,7 +3,7 @@ use std::ops::Index;
 
 use crate::models::configuration::color_config::ColorConfig;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct EnvConfig {
     pub env: String,
